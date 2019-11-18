@@ -1,6 +1,6 @@
 ## Actions
 
-Actions are the means by which the assistant can provide real data to corresponding concepts. Each skill will contain a set of actions, where each action is designated by a set of [constraints](#constraints), [input](#input), and [output](#output). An action's signature follows the format `constraints => input -> output`. Given an configuration of input concepts subject to certain constraints, the system will be able to produce the specified output after executing the body of the action. In addition to this signature, an action will have a name as well as a function to be invoked when the action is selected. For example consider the action below:
+Actions are the means by which the assistant can provide real data to corresponding concepts. Each skill will contain a set of actions, where each action is designated by a set of [constraints](#constraints), [input](#input), and [output](#output). An action's signature follows the format `constraints => input -> output`. Given a configuration of input concepts subject to certain constraints, the system will be able to produce the specified output after executing the body of the action. In addition to this signature, an action will have a name as well as a function to be invoked when the action is selected. For example consider the action below:
 
 ```
 :Products(:Trending) -> data :Products
@@ -36,7 +36,7 @@ To get a category by it's name the following action can be used:
 :Category(data :UserString) -> data :Category
 ```
 
-Processing of quoted strings is available out of the box. Each quoted string will be annotated with `:UserString` concept and the corresponding data will be created. So you can just get this data in your action body:
+Processing of quoted strings is available out of the box. Each quoted string will be annotated with the `:UserString` concept and the corresponding data will be created. So you can just get this data in your action body:
 
 ```
 let categoryName = await p.get(":UserString")
@@ -69,7 +69,7 @@ The data parameters can be optional too:
 :Products(optional data :Category) -> data :Products
 ```
 
-In this case we can return products related to a certain category if we have category data or all the products otherwise.
+In this case we can return products related to a certain category if we have category data or all of the products if the `:Category` concept is not present.
 
 The input parameters can be implicit:
 
@@ -87,7 +87,7 @@ Q: _show me products_
 
 A: Agent will get products for category "Jeans"
 
-If no concept found in the context the agent will try to recover this concept data using available actions so we will be able to ask questions like _show me products for "Jeans"_.
+If no concept is found in the context the agent will try to recover this concept data using available actions so we will be able to ask questions like _show me products for "Jeans"_.
 
 ### Constraints
 
@@ -101,11 +101,11 @@ Concepts within a signature can be qualified with additional specifications to a
 
 We support three `paramTypes`, viz. `concept`, `data`, and `promise`. `concept` is the default `paramType` and no keyword is required to denote it. It simply signifies that a signature requires a given concept to be present in the parse tree. `data` denotes the real data associated with an action (which is produced by another action). For instance, `edi:Submit(data edi:Invoice)` denotes a submission request that requires real invoice data. [promise](./Promises.md) is used to denote a concept which we intend to cover with real data once some further preliminary data is acquired, e.g. promises to return weather data once the user's geo location is ascertained.
 
-We support four `queryTypes`, viz. `regular`, `optional`, `context`, and `implicit`. `regular` is the default `queryType` and no keyword is required to denote it. It simply signifies that a query matches a concepts in the current question as expected. `optional` qualifies the query to accept an optional parameter, e.g. `:Mailings(optional :All)` means that our action can support questions such as "show me all mailings" or simply "show me mailings". `context` means that our query can search the conversational context for a parameter. For instance, `edi:Modify (context data edi:Invoice)` is an action which modifies an already invoice. `implicit` is like `context` but different insofar as it gives the assistant license to create new concepts through the use of other actions before executing the current action. For instance, if we have one action as `:SendVolume(optional :Relation(implicit data :Mailings))` and another action as `:Mailings -> data :Mailings`, then, when answering a question about send volume, the assistant may execute the mailings action first in order to have data to complete the action for send volume. Mailings nodes will be tagged within the information space as `virtual`. Because `implicit` actions may create additional concepts as a side effect and thus significantly alter the complexity of answering a question, they should be used judiciously. In fact, you should try to avoid `implicit` parameters whenever possible. Both `context` and `implicit` should only be used to qualify `data` nodes.
+We support four `queryTypes`, viz. `regular`, `optional`, `context`, and `implicit`. `regular` is the default `queryType` and no keyword is required to denote it. It simply signifies that a query matches a concept in the current question as expected. `optional` qualifies the query to accept an optional parameter, e.g. `:Mailings(optional :All)` means that our action can support questions such as "show me all mailings" or simply "show me mailings". `context` means that our query can search the conversational context for a parameter. For instance, `edi:Modify (context data edi:Invoice)` is an action which modifies an already existing invoice. `implicit` is like `context` but different insofar as it gives the assistant license to create new concepts through the use of other actions before executing the current action. For instance, if we have one action as `:SendVolume(optional :Relation(implicit data :Mailings))` and another action as `:Mailings -> data :Mailings`, then, when answering a question about send volume, the assistant may execute the mailings action first in order to have data to complete the action for send volume. Mailings nodes will be tagged within the information space as `virtual`. Because `implicit` actions may create additional concepts as a side effect and thus significantly alter the complexity of answering a question, they should be used judiciously. In fact, you should try to avoid `implicit` parameters whenever possible. Both `context` and `implicit` should only be used to qualify `data` nodes.
 
 ### Input
 
-An action's input is represented as a tree of concepts. These concepts must be matched against in order for the action to be selected for execution. The concepts in this tree may be qualified with `paramTypes` and `queryTypes`. A common usage of `paramTypes` within input is to specify that an action requires real data. For instance, `sc:Order(sc:Identifier)` will fire when the system notices a request such as "show me order #1234", however, it will not supply the real data associated with the identifier, viz. 1234, to your action since it is only requiring the `concept` `sc:Identifier` to be present. To make use of this real data, i.e. to signify that `sc:Idenifier` is a parameter with `data`, input should be denoted as `sc:Order(data sc:Identifier)`. A common usage of `queryTypes` within an input is to denote that a parameter may be taken from already existing context. For instance, `:Confirmation(context data expo:DeleteProduct)` requires real data associated with a deleted product to already exist within the context of the conversation--which makes sense given that this action is a confirmation request. As you can see from this example, both `paramTypes` and `queryTypes` can be used in conjunction with one another when defining an input signature.
+An action's input is represented as a tree of concepts. These concepts must be matched against in order for the action to be selected for execution. The concepts in this tree may be qualified with `paramTypes` and `queryTypes`. A common usage of `paramTypes` within input is to specify that an action requires real data. For instance, `sc:Order(sc:Identifier)` will fire when the system notices a request such as "show me order #1234", however, it will not supply the real data associated with the identifier, viz. 1234, to your action since it is only requiring the `concept` `sc:Identifier` to be present. To make use of this real data, i.e. to signify that `sc:Idenifier` is a parameter with `data`, input should be denoted as `sc:Order(data sc:Identifier)`. A common usage of `queryTypes` within an input is to denote that a parameter may be taken from an already existing context. For instance, `:Confirmation(context data expo:DeleteProduct)` requires real data associated with a deleted product to already exist within the context of the conversation--which makes sense given that this action is a confirmation request. As you can see from this example, both `paramTypes` and `queryTypes` can be used in conjunction with one another when defining an input signature.
 
 Since input is represented as a tree, an ordering is imposed on the concepts. For instance, `:News(:Relation(:Organization)) -> data :News` implies the following ordering "news" -> "related to" -> "organization". EBA is able to understand such inherent dependencies when it builds the syntax tree for your question, enabling it to distinguish between a similar question such as "organization" -> "related to" -> "news".
 
