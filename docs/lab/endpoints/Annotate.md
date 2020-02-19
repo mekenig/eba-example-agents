@@ -51,7 +51,7 @@ module.exports.main = async (params) => {
 
 ## Parse tree format
 
-The parse tree is represented in JSON as a tree of tagged tokens. The tree itself is represented as a JSON array of two elements, where the first element is a root label, the second on is a sub forest:
+The parse tree is represented in JSON as a tree of tagged tokens. The tree itself is represented as a JSON array of two elements, where the first element is a root label, the second one is a sub forest:
 ```
 [
   rootLabel,
